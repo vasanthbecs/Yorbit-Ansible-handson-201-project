@@ -1,0 +1,14 @@
+---
+- hosts: app
+  tasks: 
+  - name: rebooting the node
+    reboot:
+      msg: "reboot initiated"
+      reboot_timeout: 600
+      connect_timeout: 300
+      test_command: whoami
+    register: output1
+    
+  - name: displaying the result
+    debug:
+      msg: "{{ output1 }}"   

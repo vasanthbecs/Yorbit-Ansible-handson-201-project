@@ -1,0 +1,48 @@
+---
+- hosts: app
+  tasks:
+       - name: Add admin group
+         group:
+            name: admin
+            state: present
+
+       - name: Add local user
+         user:
+           name: vasanth
+           group: admin
+           shell: /bin/bash
+           home: /home/vasanth
+           create_home: yes
+           state: present
+
+       - name: Add SSH public key for user
+         authorized_key:
+                user: vasanth
+                key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+                state: present
+
+       - name: Add sudoers users to wheel group
+         user:
+            name: vasanth
+            groups: wheel
+            append: yes
+            state: present
+            createhome: no
+
+       - name: Add hardened SSH config
+         copy:
+            dest: /etc/ssh/sshd_config
+            src: /etc/ssh/sshd_config
+            owner: root
+            group: root
+            mode: 0600
+         notify: Reload SSH
+       - name: Perform full patching
+         package:
+               name: '*'
+               state: latest
+  handlers:
+       - name: Reload SSH
+         service:
+               name: sshd
+               state: reloaded
